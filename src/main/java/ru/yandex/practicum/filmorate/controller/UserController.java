@@ -44,7 +44,7 @@ public class UserController {
     public User update(@RequestBody User user) { // Метод обновления пользователя
         validate(user);
         if (!users.containsKey(user.getId())) {
-            throw new ValidationException("Пользователь с id=" + user.getId() + " не найден");
+            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
         fillName(user);
         users.put(user.getId(), user);
