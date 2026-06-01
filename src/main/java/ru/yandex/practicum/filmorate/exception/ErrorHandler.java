@@ -9,20 +9,28 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-// Класс обработчик ошибок
+// Класс для централизованной обработки ошибок
 public class ErrorHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    // Метод обработки ошибки валидации
+    // Метод обработки ошибок валидации
     public ErrorResponse handleValidationException(ValidationException exception) {
         log.warn("Ошибка валидации: {}", exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    // Метод обработки ошибок, когда сущность не найдена
+    public ErrorResponse handleNotFoundException(NotFoundException exception) {
+        log.warn("Сущность не найдена: {}", exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    // Метод обработки ошибок некорректного тела запроса
+    // Метод обработки некорректного JSON в запросе
     public ErrorResponse handleUnreadableBody(HttpMessageNotReadableException exception) {
         log.warn("Некорректное тело запроса: {}", exception.getMessage());
         return new ErrorResponse("Некорректное тело запроса");
