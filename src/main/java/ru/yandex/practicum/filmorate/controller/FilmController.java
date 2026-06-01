@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/films")
-// Класс FilmController
+// Класс контроллер для работы с фильмами
 public class FilmController {
 
     // Минимально допустимая дата релиза фильма
@@ -28,12 +29,12 @@ public class FilmController {
     private static final int MAX_DESCRIPTION_LENGTH = 200;
     // Хранилище фильмов в памяти приложения (ключ - id фильма, значение - объект Film)
     private final Map<Integer, Film> films = new HashMap<>();
-    // Счётчик для генерации id фильмов
+    // Счётчик для генерации уникальных идентификаторов
     private int currentId = 0;
 
-    // Метод обрабатывает POST-запросы на /films
     @PostMapping
-    public Film create(@RequestBody Film film) { // Метод создания фильма
+    // Получает фильм из тела запроса и возвращает созданный объект
+    public Film create(@RequestBody Film film) {
         validate(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -41,29 +42,31 @@ public class FilmController {
         return film;
     }
 
-    // Метод обрабатывает PUT-запросы на /films
     @PutMapping
-    public Film update(@RequestBody Film film) { // Метод обновления фильма
+    // Принимает фильм из тела запроса и возвращает обновлённый объект
+    public Film update(@RequestBody Film film) {
         validate(film);
         if (!films.containsKey(film.getId())) {
-            throw new ValidationException("Фильм с id=" + film.getId() + " не найден");
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
         films.put(film.getId(), film);
         log.info("Обновлён фильм: {}", film);
         return film;
     }
 
-    // Метод обрабатывает GET-запросы на /films
     @GetMapping
-    public Collection<Film> findAll() { // Метод получения всех фильмов
+    // Возвращает коллекцию всех фильмов
+    public Collection<Film> findAll() {
         return new ArrayList<>(films.values());
     }
 
-    private int getNextId() { // Метод генерации нового id
+    // Генерирует следующий уникальный идентификатор
+    private int getNextId() {
         return ++currentId;
     }
 
-    private void validate(Film film) { // Метод проверки корректности данных фильма
+    // Выполняет проверку корректности данных фильма
+    private void validate(Film film) {
         if (film == null) {
             throw new ValidationException("Фильм не передан");
         }
