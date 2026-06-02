@@ -6,11 +6,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 @Slf4j
 @RestControllerAdvice
-// Класс для централизованной обработки ошибок
+// Класс ErrorHandler централизованно обрабатывает ошибки приложения
 public class ErrorHandler {
 
     @ExceptionHandler(ValidationException.class)
@@ -35,5 +34,13 @@ public class ErrorHandler {
     public ErrorResponse handleUnreadableBody(HttpMessageNotReadableException exception) {
         log.warn("Некорректное тело запроса: {}", exception.getMessage());
         return new ErrorResponse("Некорректное тело запроса");
+    }
+
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    // Метод обработки непредвиденных ошибок сервера
+    public ErrorResponse handleThrowable(Throwable exception) {
+        log.error("Непредвиденная ошибка", exception);
+        return new ErrorResponse("Внутренняя ошибка сервера");
     }
 }
