@@ -1,16 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+// Класс для хранения информации о возрастном рейтинге фильма
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-// Класс Genre для хранения информации о жанре фильма
-public class Genre {
-    // Поле для хранения уникального идентификатора жанра
+public class Mpa {
+
+    // Поле для хранения идентификатора рейтинга
     private int id;
-    // Поле для хранения названия жанра
+
+    // Поле для хранения названия рейтинга
     private String name;
 }
