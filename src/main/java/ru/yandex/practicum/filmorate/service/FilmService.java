@@ -2,6 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.MpaDbStorage;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -29,12 +33,16 @@ public class FilmService {
 
     // Хранилище пользователей нужно для проверки, что лайк ставит существующий пользователь
     private final UserStorage userStorage;
+    private final GenreDbStorage genreStorage;
+    private final MpaDbStorage mpaStorage;
 
     @Autowired
     // Конструктор получает зависимости из Spring-контекста
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, GenreDbStorage genreStorage, MpaDbStorage mpaStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.genreStorage = genreStorage;
+        this.mpaStorage = mpaStorage;
     }
 
     // Создаёт фильм
@@ -71,7 +79,7 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         Film film = getById(filmId);
         checkUserExists(userId);
-        film.getLikes().add(userId);
+        ((FilmDbStorage) filmStorage).addLike(filmId, userId);
         log.info("Пользователь с id={} поставил лайк фильму с id={}", userId, filmId);
     }
 
@@ -79,7 +87,7 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         Film film = getById(filmId);
         checkUserExists(userId);
-        film.getLikes().remove(userId);
+        ((FilmDbStorage) filmStorage).removeLike(filmId, userId);
         log.info("Пользователь с id={} удалил лайк у фильма с id={}", userId, filmId);
     }
 
@@ -110,6 +118,14 @@ public class FilmService {
         }
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
             throw new ValidationException("Дата релиза фильма раньше 28 декабря 1895 года");
+        }
+        if (film.getMpa() != null && mpaStorage.getById(film.getMpa().getId()).isEmpty()) {
+            throw new NotFoundException("Рейтинг не найден");
+        }
+        if (film.getGenres() != null) {
+            for (var genre : film.getGenres()) {
+                if (genreStorage.getById(genre.getId()).isEmpty()) throw new NotFoundException("Жанр не найден: " + genre.getId());
+            }
         }
         if (film.getDuration() <= 0) {
             throw new ValidationException("Продолжительность фильма должна быть положительной");
