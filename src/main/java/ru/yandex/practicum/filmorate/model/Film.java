@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +23,10 @@ public class Film {
     private LocalDate releaseDate;
     // Продолжительность фильма в минутах
     private int duration;
+    // Возрастной рейтинг фильма
+    private Mpa mpa;
+    // Поле для хранения списка жанров фильма с созданием пустого списка
+    private List<Genre> genres = new ArrayList<>();
     // Набор id пользователей, которые поставили лайк фильму
     @JsonIgnore
     private final Set<Integer> likes = new HashSet<>();
