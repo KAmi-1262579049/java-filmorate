@@ -1,4 +1,3 @@
-
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.jdbc.core.JdbcTemplate;
