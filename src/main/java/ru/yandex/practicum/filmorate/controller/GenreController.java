@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.film.GenreDbStorage;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.Collection;
 
@@ -15,10 +15,10 @@ import java.util.Collection;
 public class GenreController {
 
     // Поле для хранения экземпляра хранилища жанров
-    private final GenreDbStorage genreStorage;
+    private final GenreService genreStorage;
 
     // Конструктор для внедрения зависимости хранилища жанров
-    public GenreController(GenreDbStorage genreStorage) {
+    public GenreController(GenreService genreStorage) {
         this.genreStorage = genreStorage;
     }
 
@@ -31,9 +31,6 @@ public class GenreController {
     // Метод для получения жанра по его идентификатору
     @GetMapping("/{id}")
     public Genre getGenreById(@PathVariable int id) {
-        return genreStorage.getById(id)
-                .orElseThrow(() -> new ru.yandex.practicum.filmorate.exception.NotFoundException(
-                        "Жанр с id " + id + " не найден"
-                ));
+        return genreStorage.getById(id);
     }
 }
