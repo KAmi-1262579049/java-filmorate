@@ -9,7 +9,7 @@ import java.util.Optional;
 
 // Класс для работы с рейтингами MPA в базе данных
 @Repository
-public class MpaDbStorage {
+public class MpaDbStorage implements MpaStorage {
 
     // Поле для выполнения SQL-запросов с помощью JdbcTemplate
     private final JdbcTemplate jdbc;
