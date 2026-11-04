@@ -41,10 +41,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
 
-        // Получаем идентификатор возрастного рейтинга фильма
         int mpaId = rs.getInt("mpa_id");
 
-        // Устанавливаем возрастной рейтинг, если он указан в базе данных
         if (!rs.wasNull()) {
             film.setMpa(new Mpa(mpaId, rs.getString("mpa_name")));
         }
@@ -62,13 +60,10 @@ public class FilmDbStorage implements FilmStorage {
     @Transactional
     public Film create(Film film) {
 
-        // Объект для получения сгенерированного идентификатора фильма
         KeyHolder holder = new GeneratedKeyHolder();
 
-        // Выполняем SQL-запрос для добавления фильма
         jdbc.update(connection -> {
 
-            // Подготавливаем SQL-запрос с возможностью получения сгенерированного ключа
             PreparedStatement ps = connection.prepareStatement(
                     """
                     INSERT INTO films (name, description, release_date, duration, mpa_id)
@@ -77,19 +72,14 @@ public class FilmDbStorage implements FilmStorage {
                     Statement.RETURN_GENERATED_KEYS
             );
 
-            // Устанавливаем название фильма
             ps.setString(1, film.getName());
 
-            // Устанавливаем описание фильма
             ps.setString(2, film.getDescription());
 
-            // Устанавливаем дату выхода фильма
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
 
-            // Устанавливаем продолжительность фильма
             ps.setInt(4, film.getDuration());
 
-            // Проверяем наличие возрастного рейтинга
             if (film.getMpa() == null) {
                 ps.setNull(5, Types.INTEGER);
             } else {
@@ -99,21 +89,16 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, holder);
 
-        // Получаем идентификатор созданного фильма
         Number generatedId = holder.getKey();
 
-        // Проверяем, что база данных вернула идентификатор
         if (generatedId == null) {
             throw new IllegalStateException("Не удалось получить ID созданного фильма");
         }
 
-        // Устанавливаем идентификатор созданному фильму
         film.setId(generatedId.intValue());
 
-        // Сохраняем жанры фильма
         saveGenres(film);
 
-        // Возвращаем созданный фильм вместе с жанрами и лайками
         return getById(film.getId()).orElseThrow();
     }
 
@@ -122,7 +107,6 @@ public class FilmDbStorage implements FilmStorage {
     @Transactional
     public Film update(Film film) {
 
-        // Обновляем основные данные фильма в базе данных
         jdbc.update(
                 """
                 UPDATE films
@@ -137,29 +121,23 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
 
-        // Удаляем предыдущие связи фильма с жанрами
         jdbc.update(
                 "DELETE FROM film_genres WHERE film_id = ?",
                 film.getId()
         );
 
-        // Сохраняем актуальные жанры фильма
         saveGenres(film);
 
-        // Возвращаем обновлённый фильм
         return getById(film.getId()).orElseThrow();
     }
 
     // Приватный метод для сохранения жанров фильма в базе данных
     private void saveGenres(Film film) {
 
-        // Проверяем, что список жанров существует
         if (film.getGenres() != null) {
 
-            // Перебираем уникальные жанры фильма
             for (Genre genre : film.getGenres().stream().distinct().toList()) {
 
-                // Сохраняем связь фильма с жанром без создания дубликатов
                 jdbc.update(
                         """
                         MERGE INTO film_genres (film_id, genre_id)
@@ -176,7 +154,6 @@ public class FilmDbStorage implements FilmStorage {
     // Приватный метод для дополнения фильма информацией о жанрах и лайках
     private Film enrich(Film film) {
 
-        // Получаем все жанры фильма из базы данных
         film.setGenres(
                 jdbc.query(
                         """
@@ -194,7 +171,6 @@ public class FilmDbStorage implements FilmStorage {
                 )
         );
 
-        // Получаем идентификаторы пользователей, поставивших лайк фильму
         film.getLikes().addAll(
                 jdbc.query(
                         "SELECT user_id FROM likes WHERE film_id = ?",
@@ -203,7 +179,6 @@ public class FilmDbStorage implements FilmStorage {
                 )
         );
 
-        // Возвращаем дополненный объект фильма
         return film;
     }
 
@@ -211,7 +186,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void delete(int id) {
 
-        // Удаляем фильм по идентификатору
         jdbc.update(
                 "DELETE FROM films WHERE id = ?",
                 id
@@ -222,7 +196,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getById(int id) {
 
-        // Ищем фильм и дополняем его жанрами и лайками
         return jdbc.query(
                         SELECT + " WHERE f.id = ?",
                         mapper,
@@ -237,7 +210,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
 
-        // Получаем фильмы, сортируем по ID и дополняем жанрами и лайками
         return jdbc.query(
                         SELECT + " ORDER BY f.id",
                         mapper
@@ -251,7 +223,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
 
-        // Получаем фильмы в порядке убывания количества лайков
         return jdbc.query(
                         SELECT + """
                                 LEFT JOIN likes l ON l.film_id = f.id
@@ -272,7 +243,6 @@ public class FilmDbStorage implements FilmStorage {
     // Метод для добавления лайка фильму от конкретного пользователя
     public void addLike(int filmId, int userId) {
 
-        // Сохраняем лайк без создания повторной записи
         jdbc.update(
                 """
                 MERGE INTO likes (film_id, user_id)
@@ -287,7 +257,6 @@ public class FilmDbStorage implements FilmStorage {
     // Метод для удаления лайка пользователя у фильма
     public void removeLike(int filmId, int userId) {
 
-        // Удаляем связь между фильмом и пользователем
         jdbc.update(
                 "DELETE FROM likes WHERE film_id = ? AND user_id = ?",
                 filmId,
