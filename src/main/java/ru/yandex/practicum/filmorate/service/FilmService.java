@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.film.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.film.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.film.MpaStorage;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -33,12 +32,12 @@ public class FilmService {
 
     // Хранилище пользователей нужно для проверки, что лайк ставит существующий пользователь
     private final UserStorage userStorage;
-    private final GenreDbStorage genreStorage;
-    private final MpaDbStorage mpaStorage;
+    private final GenreStorage genreStorage;
+    private final MpaStorage mpaStorage;
 
     @Autowired
     // Конструктор получает зависимости из Spring-контекста
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, GenreDbStorage genreStorage, MpaDbStorage mpaStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, GenreStorage genreStorage, MpaStorage mpaStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
@@ -79,7 +78,7 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         Film film = getById(filmId);
         checkUserExists(userId);
-        ((FilmDbStorage) filmStorage).addLike(filmId, userId);
+        filmStorage.addLike(filmId, userId);
         log.info("Пользователь с id={} поставил лайк фильму с id={}", userId, filmId);
     }
 
@@ -87,7 +86,7 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         Film film = getById(filmId);
         checkUserExists(userId);
-        ((FilmDbStorage) filmStorage).removeLike(filmId, userId);
+        filmStorage.removeLike(filmId, userId);
         log.info("Пользователь с id={} удалил лайк у фильма с id={}", userId, filmId);
     }
 
