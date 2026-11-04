@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -65,7 +64,7 @@ public class UserService {
         checkDifferentUsers(userId, friendId);
         User user = getById(userId);
         getById(friendId);
-        ((UserDbStorage) userStorage).addFriend(userId, friendId);
+        userStorage.addFriend(userId, friendId);
         log.info("Пользователи с id={} и id={} стали друзьями", userId, friendId);
     }
 
@@ -74,14 +73,14 @@ public class UserService {
         checkDifferentUsers(userId, friendId);
         User user = getById(userId);
         getById(friendId);
-        ((UserDbStorage) userStorage).removeFriend(userId, friendId);
+        userStorage.removeFriend(userId, friendId);
         log.info("Пользователи с id={} и id={} больше не друзья", userId, friendId);
     }
 
     // Возвращает список друзей пользователя
     public List<User> getFriends(int userId) {
         getById(userId);
-        return ((UserDbStorage) userStorage).getFriends(userId);
+        return userStorage.getFriends(userId);
     }
 
     // Возвращает список общих друзей двух пользователей
@@ -89,7 +88,7 @@ public class UserService {
         checkDifferentUsers(userId, otherId);
         getById(userId);
         getById(otherId);
-        return ((UserDbStorage) userStorage).getCommonFriends(userId, otherId);
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     // Проверяет, что пользователь не пытается выполнить операцию сам с собой
