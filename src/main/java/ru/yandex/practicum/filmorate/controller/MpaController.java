@@ -4,9 +4,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.film.MpaDbStorage;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.Collection;
 
@@ -16,10 +15,10 @@ import java.util.Collection;
 public class MpaController {
 
     // Поле для хранения экземпляра хранилища рейтингов MPA
-    private final MpaDbStorage storage;
+    private final MpaService storage;
 
     // Конструктор для внедрения зависимости хранилища рейтингов MPA
-    public MpaController(MpaDbStorage storage) {
+    public MpaController(MpaService storage) {
         this.storage = storage;
     }
 
@@ -32,7 +31,6 @@ public class MpaController {
     // Метод для получения рейтинга MPA по его идентификатору
     @GetMapping("/{id}")
     public Mpa getById(@PathVariable int id) {
-        return storage.getById(id)
-                .orElseThrow(() -> new NotFoundException("Рейтинг MPA с id " + id + " не найден"));
+        return storage.getById(id);
     }
 }
