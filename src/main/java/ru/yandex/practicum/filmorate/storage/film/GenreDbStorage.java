@@ -1,3 +1,4 @@
+
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 // Класс для получения информации о жанрах из базы данных
 @Repository
-public class GenreDbStorage {
+public class GenreDbStorage implements GenreStorage {
 
     // Поле для выполнения SQL-запросов с помощью JdbcTemplate
     private final JdbcTemplate jdbc;
@@ -22,7 +23,6 @@ public class GenreDbStorage {
     // Метод для получения списка всех жанров из базы данных
     public List<Genre> findAll() {
 
-        // Выполняем SQL-запрос для получения жанров, отсортированных по идентификатору
         return jdbc.query(
                 "SELECT id, name FROM genres ORDER BY id",
                 (rs, rowNum) -> new Genre(
@@ -35,7 +35,6 @@ public class GenreDbStorage {
     // Метод для поиска жанра по его идентификатору
     public Optional<Genre> getById(int id) {
 
-        // Выполняем SQL-запрос для поиска жанра по идентификатору
         return jdbc.query(
                         "SELECT id, name FROM genres WHERE id = ?",
                         (rs, rowNum) -> new Genre(
