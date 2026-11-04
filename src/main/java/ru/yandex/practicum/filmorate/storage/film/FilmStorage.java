@@ -24,6 +24,12 @@ public interface FilmStorage {
     // Возвращает все фильмы
     Collection<Film> findAll();
 
+    // Добавляет лайк пользователя фильму
+    void addLike(int filmId, int userId);
+
+    // Удаляет лайк пользователя у фильма
+    void removeLike(int filmId, int userId);
+
     // Возвращает count самых популярных фильмов по количеству лайков
     List<Film> getPopularFilms(int count);
 }

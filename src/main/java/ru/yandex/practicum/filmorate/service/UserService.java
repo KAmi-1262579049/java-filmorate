@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -22,7 +23,7 @@ public class UserService {
 
     @Autowired
     // Конструктор получает зависимость UserStorage из Spring-контекста
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -62,9 +63,8 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         checkDifferentUsers(userId, friendId);
         User user = getById(userId);
-        User friend = getById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        getById(friendId);
+        userStorage.addFriend(userId, friendId);
         log.info("Пользователи с id={} и id={} стали друзьями", userId, friendId);
     }
 
@@ -72,29 +72,23 @@ public class UserService {
     public void removeFriend(int userId, int friendId) {
         checkDifferentUsers(userId, friendId);
         User user = getById(userId);
-        User friend = getById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        getById(friendId);
+        userStorage.removeFriend(userId, friendId);
         log.info("Пользователи с id={} и id={} больше не друзья", userId, friendId);
     }
 
     // Возвращает список друзей пользователя
     public List<User> getFriends(int userId) {
-        User user = getById(userId);
-        return user.getFriends().stream()
-                .map(this::getById)
-                .toList();
+        getById(userId);
+        return userStorage.getFriends(userId);
     }
 
     // Возвращает список общих друзей двух пользователей
     public List<User> getCommonFriends(int userId, int otherId) {
         checkDifferentUsers(userId, otherId);
-        User user = getById(userId);
-        User otherUser = getById(otherId);
-        return user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
-                .map(this::getById)
-                .toList();
+        getById(userId);
+        getById(otherId);
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     // Проверяет, что пользователь не пытается выполнить операцию сам с собой
